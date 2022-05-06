@@ -1,0 +1,35 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 04/21/2022 12:50:46 PM
+// Design Name: 
+// Module Name: in4out4_tb
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module design4bits_tb();
+reg [4:0]in;
+wire [3:0]out;
+
+design4bits uut(in,out);
+
+initial $monitor("%b %b",in[3:0],out);
+    initial begin
+        for(in=0;in<16;in=in+1)
+            #5;
+        $stop;
+    end
+endmodule
