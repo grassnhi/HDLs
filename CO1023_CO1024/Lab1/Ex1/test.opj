@@ -1,0 +1,82 @@
+(ExpressProject "test"
+  (ProjectVersion "19981106")
+  (SoftwareVersion "17.4-2022 S008-[08/02/22]")
+  (ProjectType "Analog or A/D Mixed Mode")
+  (Folder "Design Resources"
+    (Folder "Library")
+    ("Allegro Netlist Directory" "allegro")
+    (DOCKED "TRUE")
+    (DOCKING_POSITION "59420")
+    (NoModify)
+    (File ".\test.dsn"
+      (Type "Schematic Design"))
+    (BuildFileAddedOrDeleted "x")
+    (CompileFileAddedOrDeleted "x")
+    (Board_sim_option "VHDL_flow"))
+  (Folder "Layout")
+  (Folder "Outputs")
+  (Folder "PSpice Resources"
+    (Folder "Simulation Profiles")
+    (Folder "Model Libraries"
+      (Sort User))
+    (Folder "Stimulus Files"
+      (Sort User))
+    (Folder "Include Files"
+      (Sort User)))
+  (DefaultLibraryBrowseDirectory "library\PSpice")
+  (Folder "Logs")
+  (PartMRUSelector
+    (SN74LS04
+      (FullPartName "SN74LS04.Normal")
+      (LibraryName "C:\CDS_SPB_HOME\CDSSETUP\PSPTILIBDIR\SN74LS04.OLB")
+      (DeviceIndex "0"))
+    (SN74LS03
+      (FullPartName "SN74LS03.Normal")
+      (LibraryName "C:\CDS_SPB_HOME\CDSSETUP\PSPTILIBDIR\SN74LS03.OLB")
+      (DeviceIndex "0"))
+    (SN74LS02
+      (FullPartName "SN74LS02.Normal")
+      (LibraryName "C:\CDS_SPB_HOME\CDSSETUP\PSPTILIBDIR\SN74LS02.OLB")
+      (DeviceIndex "0"))
+    (SN74LS00
+      (FullPartName "SN74LS00.Normal")
+      (LibraryName "C:\CDS_SPB_HOME\CDSSETUP\PSPTILIBDIR\SN74LS00.OLB")
+      (DeviceIndex "0"))
+    (0
+      (LibraryName "E:\DOWNLOADED\VI MACH\TOOLS\CAPTURE\LIBRARY\CAPSYM.OLB")
+      (DeviceIndex "0"))
+    (INV
+      (FullPartName "INV.Normal")
+      (LibraryName
+         "E:\DOWNLOADED\VI MACH\TOOLS\CAPTURE\LIBRARY\PSPICE\DIG_PRIM.OLB")
+      (DeviceIndex "0"))
+    (NOR2
+      (FullPartName "NOR2.Normal")
+      (LibraryName
+         "E:\DOWNLOADED\VI MACH\TOOLS\CAPTURE\LIBRARY\PSPICE\DIG_PRIM.OLB")
+      (DeviceIndex "0"))
+    (OR2
+      (FullPartName "OR2.Normal")
+      (LibraryName
+         "E:\DOWNLOADED\VI MACH\TOOLS\CAPTURE\LIBRARY\PSPICE\DIG_PRIM.OLB")
+      (DeviceIndex "0"))
+    (AND2
+      (FullPartName "AND2.Normal")
+      (LibraryName
+         "E:\DOWNLOADED\VI MACH\TOOLS\CAPTURE\LIBRARY\PSPICE\DIG_PRIM.OLB")
+      (DeviceIndex "0")))
+  (MPSSessionName "PC")
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" "e:\coding\hdls\co1023_co1024\lab1\ex1\test.dsn")
+      (Path "Design Resources" "e:\coding\hdls\co1023_co1024\lab1\ex1\test.dsn"
+         "SCHEMATIC1")
+      (Select "Design Resources"
+         "e:\coding\hdls\co1023_co1024\lab1\ex1\test.dsn" "SCHEMATIC1" "PAGE1"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 0 1 -1 -1 -1 -1 0 200 0 412"))
+      (Tab 0))))
