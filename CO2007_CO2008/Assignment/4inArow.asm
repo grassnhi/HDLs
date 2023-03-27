@@ -191,15 +191,16 @@ main:
 	syscall
 
 
-# # # # # #   ---  FIRST MOVE  ---  # # # # # # # # # 
-# Player MUST drop the piece in the centre column!  #
-# -> Wrong column => count as a violation.          #
-# -> Input: cloumn index 3 => $a1                   #
-# -> Output: number of violation, number of count   #
-# # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # # # # # # # # # #  ---  FIRST MOVE  ---   # # # # # # # # # # # # # #
+# Player MUST drop the piece in the centre column!                      #
+# -> Wrong column => count as a violation.                              #
+# -> Input: cloumn index 3 => $a1                                       #
+# -> Changing value: number of violation, each number of piece's count  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 firstMove:
-    addi $sp, $sp, -4 # Make space for 1 item
-	sw $ra, ($sp) # Store return address
+    addi $sp, $sp, -4 
+	sw $ra, ($sp) 
 
     li $t9, 0 # turn = 0
 
@@ -353,9 +354,13 @@ firstMove:
         addi $sp, $sp, 4 # Pop stack
         jr $ra
 
-# # # # # # #   ---  PLAYGAME   ---   # # # # # # # # # # # # # # 
-#  a1 = col a0 = end
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# # # # # # # # # # # #   ---  PLAYGAME   ---   # # # # # # # # # # # # # 
+# Each player has 1 turn and 3 selections, choose one or some           #
+# - remove (lose turn), undo, block (other cannot move == get 1 move)   #
+# - No parameters and return value                                      #
+# - Changing value: number of selections, piece counts                  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 playGame:
     addi $sp, $sp, -4 # Make space for 1 item
 	sw $ra, ($sp) # Store return address
@@ -641,6 +646,7 @@ playGame:
         addi $sp, $sp, 4 
         jr $ra
 
+
 # # # # # #   ---  PRINTBOARD   ---   # # # # # # # # 
 # Function to show the board and the change on it.  #
 # - No parameter and no return value                #
@@ -672,7 +678,7 @@ printBoard:
             
             lb $a0, board($t4)
             bne $a0, 0, printPiece
-            li $a0, 46 # Else print '.' (ascii 46 = '.')
+            li $a0, 46 # Ascii 46 = '.'
             printPiece:
             li $v0, 11
             syscall
@@ -682,7 +688,7 @@ printBoard:
             syscall
 
             addi $t3, $t3, 1 # j++
-		    j loop2 # continue loop j
+		    j loop2 
         endLoop2:
 
         lb $a0, newline
@@ -690,30 +696,30 @@ printBoard:
         syscall 
 
         addi $t2, $t2, 1 # i++
-        j loop1 # Continue loop i
+        j loop1 
     endLoop1:
 
     la $a0, dashLine
 	li $v0, 4
-	syscall # Print dashLine
+	syscall 
 	
 	la $a0, index
 	li $v0, 4
-	syscall # Print index
+	syscall
 	
 	lb $a0, newline
 	li $v0, 11
-	syscall # Print endl
+	syscall
 
     lw $ra, ($sp) 
     addi $sp, $sp, 4 
     jr $ra
 
 
-# # # # # #   --- PRINTTURN --- # # # # # # # # 
-# - Function for print name ($a1), number of violations($a2) and undo($a3) of each player 
-# - No parameter and no return value
-# # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # #   ---   PRINTTURN   ---   # # # # # # # # # # # # # # 
+# - Function for print name, number of violations and undo of each player   # 
+# - Arguments: $a1, $a2, $a3 respectively ~ printed information             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 printTurn:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -746,7 +752,11 @@ printTurn:
 	addi $sp, $sp, 4 
 	jr $ra
 
-# Input: $a1 = remove, $a2 = other piece, $a3 = count other
+
+# # # # # # # # # #   ---   REMOVEPIECE   ---   # # # # # # # # # # # 
+# Function to ask to remove and remove piece if player choose yes   #
+# Input: $a1 = remove, $a2 = other piece, $a3 = count other         #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 removePiece:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -770,10 +780,10 @@ removePiece:
 
         la $a0, invalid
         li $v0, 4
-        syscall # print string to inform invalid character
+        syscall 
             
         li $v0, 12
-        syscall # read character
+        syscall 
         move $t1, $v0 # $t1 = answer (1: yes, 0: no)
         
         seq $t2, $t1, 48 # If($t1 == 0) $t2 = 1 else $t2 = 0 (ascii 48 = '0')
@@ -847,7 +857,7 @@ removePiece:
             moving:
                 sb $t3, board($t1)
 
-            addi $t0, $t0, -1 # i--
+            addi $t0, $t0, -1 
             j loopMove
 
         endLoopMove:
@@ -859,8 +869,11 @@ removePiece:
         jr $ra
 
 
-# Input: $a1 = col, $a2 = piece, $a3 = violate, $v0 = count, $v1 = curRow
-# No violate left => return boolEnd = 1
+# # # # # # # # # # #    ---   CHECKVIOLATION   ---   # # # # # # # # # # # #
+# Input: $a1 = col, $a2 = piece, $a3 = violate, $v0 = count, $v1 = curRow   #
+# If wrong index of column, violation--, ask col again and change curRow    #
+# No violate left => return boolEnd = 1                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 checkViolation:
     addi $sp, $sp, -4
     sw $ra, ($sp)
@@ -876,25 +889,25 @@ checkViolation:
 		j endViolation
 		
     restartMove:
-		addi $sp, $sp, -8 # Make space for 2 items
-		sw $v0, ($sp) # Store $v0: piecee count
-		sw $a0, 4($sp) # Store $a0: flag of checkColumn ($a0 will be change when print string)
+		addi $sp, $sp, -8 
+		sw $v0, ($sp) # $v0: piecee count
+		sw $a0, 4($sp) # $a0: flag of checkColumn 
 		
         la $a0, notCol
 		li $v0, 4
 		syscall 
 		
         li $v0, 5
-		syscall # read column from user
-		move $a1, $v0 # update col in $a1
+		syscall 
+		move $a1, $v0 
 		
-        addi $a3, $a3, -1 # violate--
+        addi $a3, $a3, -1 
 
-		lw $v0, ($sp) # Restore $v0
-		lw $a0, 4($sp) # Restore $a0
-		addi $sp, $sp, 8 # Pop 2 item out of stack
+		lw $v0, ($sp) 
+		lw $a0, 4($sp) 
+		addi $sp, $sp, 8 
 
-		j loopViolate # continue loop violate
+		j loopViolate 
 
     endViolation:
         lw $ra, ($sp) 
@@ -903,11 +916,11 @@ checkViolation:
 
 
 
-# # # # # #   --- CHECKCOL  ---   # # # # # # # # 
-# - Input: index of column => $a1, piece => $a2, violation => $a3, count $v0, curRow $v1       
-# -> If the index is ok => place piece, update curRow 
-# - Return: $a0 => true for valid else false
-# # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # #   --- CHECKCOL  ---   # # # # # # # # # # # # # # # # # # # #  
+# - Input: index of column => $a1, piece => $a2, violation => $a3, count $v0, curRow $v1  #       
+# -> If the index is ok => place piece, update curRow else return only                    #
+# - Return value: $a0 => true for valid else false                                        #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 checkCol:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -918,9 +931,9 @@ checkCol:
 	or $t0, $t0, $t1 # If(col < 0 || col >= column) $t0 = 1 else $t0 = 0
 	beq $t0, 1, endCheckCol # If col invalid -> return
 
-    addi $t0, $s6, -1 # row index: Initialise i = row - 1
+    addi $t0, $s6, -1 # i = row - 1
 	loopCheck:
-		beq $t0, -1, endCheckCol # While(i >= 0) do
+		beq $t0, -1, endCheckCol 
 
 		mul $t1, $t0, $s7 # $t1 = i * column
 		add $t1, $t1, $a1 # $t1 = i * column + col
@@ -928,11 +941,11 @@ checkCol:
         lb $t2, board($t1) # $t2 = board[i][col]
 		beq $t2, 0, endCheck # If board[i][col] null -> valid -> break the loop
 		
-        addi $t0, $t0, -1 # i--
-		j loopCheck # Continue the loop
+        addi $t0, $t0, -1 
+		j loopCheck 
 
 	endCheck: 
-        sb $a2, board($t1) # update board[i][col]
+        sb $a2, board($t1) 
 
         addi $v0, $v0, 1
 
@@ -945,8 +958,11 @@ checkCol:
         addi $sp, $sp, 4 
         jr $ra
 
-# $a2 : name winner
-# $a3: piece count
+
+# # # # # # # # # #   ---   PRINTWINNER   ---   # # # # # # # # # # # 
+# - Function for print name, total number of piece of the winner    #  
+# - Arguments: $a2 : name winner,  $a3: piece count                 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 printWinner:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -971,13 +987,12 @@ printWinner:
     addi $sp, $sp, 4 
     jr $ra
 
-# # # # # #
-# Function to check which player wins or game draw
-# Input $a3: number of other piece
-# Input $a1: piece 'O' or 'X' - $s0 = 'O'~ $s1  
-# Input $a2: name - $s3 = 'X' ~ $s2(name)
-# # # # # # # # # # # ## # # 
 
+# # # # # # # # # # #   ---   CHECKWIN   ---    # # # # # # # # # # # # #
+# Function to check whether player wins or the game ends with draw      #
+# - Input $a1 (piece), $a2 (other name), $a3 (other piece)              #
+# - Return with boolEnd is true (print result and exit game) or false.  #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 checkWin:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -1134,14 +1149,14 @@ checkWin:
             jal printWinner
         
             li $a0, 1
-            sw $a0, boolEnd # endGame = true
+            sw $a0, boolEnd 
 
-            j endCheckWin # return
+            j endCheckWin 
             
 
 		continueCheckWin:
-            addi $t1, $t1, 1 # j++
-            j L2Win # Continue loop j
+            addi $t1, $t1, 1 
+            j L2Win 
 		endL2Win:
 		
         addi $t0, $t0, -1 # i--
@@ -1150,33 +1165,36 @@ checkWin:
 	
 # === DRAWN === #
 	li $a0, 0
-	jal checkFull # Check if the board is full
+	jal checkFull 
 	seq $t0, $a0, 1 # If(checkFull) $t0 = 1 else $t0 = 0
 	lw $a0, boolEnd # $a0 = flag boolEnd
 	seq $t1, $a0, 0 # If(!boolEnd) $t1 = 1 else $t1 = 0
 	and $t0, $t0, $t1 # If($t0 && $t1) $t0 = 1 else $t0 = 0
 	beq $t0, 0, endCheckWin # If(!checkFull || boolEnd) return
-	# Else game draw
 	
 	la $a0, draw
 	li $v0, 4
 	syscall 
     
 	li $a0, 1 
-	sw $a0, boolEnd # boolEnd = true
+	sw $a0, boolEnd 
 	
 	endCheckWin:
         lw $ra, ($sp) 
         addi $sp, $sp, 4 
         jr $ra
 
-# Input: $a0 = undo, $a1 = col, $a2 = count piece, $a3 = curRow
-# ask -> yes -> undo -> col -> violation -> check win
+
+# # # # # # # # # # #    ---   UNDOMOVE   ---   # # # # # # # # # # # # # 
+# Function to ask if player want to undo their move                     #
+# -> If yes, undo and ask col >< If no, exit function with boolUn = 0   #
+# Input: $a0 = undo, $a1 = col, $a2 = count piece, $a3 = curRow         #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 undoMove:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
 
-	move $t5, $a0 # Store undo count
+	move $t5, $a0 # undo count
 
 	beq $t5, 0, endUndo
 
@@ -1186,7 +1204,7 @@ undoMove:
 
     li $v0, 12
 	syscall
-    move $t1, $v0 # $t1 = answer (1: yes, 0: no)
+    move $t1, $v0 # (1: yes, 0: no)
 	
     seq $t2, $t1, 48 # If($t1 == 0) $t2 = 1 else $t2 = 0 (ascii 48 = '0')
 	seq $t3, $t1, 49 # If($t1 == 1) $t3 = 1 else $t3 = 0 (ascii 49 = '1')
@@ -1197,11 +1215,11 @@ undoMove:
 
         la $a0, invalid
         li $v0, 4
-        syscall # print string to inform invalid character
+        syscall 
             
         li $v0, 12
-        syscall # read character
-        move $t1, $v0 # $t1 = answer (1: yes, 0: no)
+        syscall 
+        move $t1, $v0 
         
         seq $t2, $t1, 48 # If($t1 == 0) $t2 = 1 else $t2 = 0 (ascii 48 = '0')
         seq $t3, $t1, 49 # If($t1 = =1) $t3 = 1 else $t3 = 0 (ascii 49 = '1')
@@ -1215,11 +1233,11 @@ undoMove:
 
     move $a0, $t5
     
-    beq $t1, 48, endUndo # If player doesn't want to undo -> end undo
+    beq $t1, 48, endUndo 
 		
 	mul $t1, $a3, $s7 # $t1 = curRow * column
 	add $t1, $t1, $a1 # $t1 = curRow * column + col
-	sb $zero, board($t1) # board[curRow][col] = '\0' (remove previous move)
+	sb $zero, board($t1) # board[curRow][col] = '\0' 
 	
     addi $a0, $a0, -1
 
@@ -1236,7 +1254,11 @@ undoMove:
     jr $ra
 
 
-# - Input $a1 = other piece, $a2 = block
+# # # # # # # # # # #    ---   BLOCKMOVE    ---   # # # # # # # # # # # # # # 
+# Function to ask if player want to block the next opponent's move          #
+# -> If yes, pass the turn again to the player else return with boolBK = 0  #
+# Input: $a1 = other piece, $a2 = block                                     #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 blockMove:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
@@ -1295,21 +1317,23 @@ blockMove:
     addi $sp, $sp, 4 
     jr $ra
 
-# # # # # #
-# Input: $a0 = 0 (flag = false)
-# Output: $a0 = 1 if full, else $a0 = 0
-# # # # # #
+
+# # # # # # #   ---   CHECKFULL   ---   # # # # # # # 
+# Function to check if the board is full or not     #
+# Input: $a0 = 0 (flag = false)                     #
+# Output: $a0 = 1 if full, else $a0 = 0             #
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
 checkFull:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
     
-    li $t0, 0 # row index: Initialise i = 0
+    li $t0, 0 # i = 0
 	loopI:
-		beq $t0, $s6, endloopI # While(i < row) do
+		beq $t0, $s6, endloopI 
 		
-        li $t1, 0 # column index: Initialise j = 0
+        li $t1, 0 #  j = 0
 		loopJ:
-		beq $t1, $s7, endloopJ # While(j < column) do
+		beq $t1, $s7, endloopJ 
 
 		mul $t2, $t0, $s7 # $t2 = i * column
 		add $t2, $t2, $t1 # $t2 = i * column + j
@@ -1317,12 +1341,12 @@ checkFull:
         lb $t2, board($t2) # $t2 = board[i][j]
 		beq $t2, 0, endCheckFull # If(board[i][j] null) return false
 		
-        addi $t1, $t1, 1 # j++
-		j loopJ # Continue loop j
+        addi $t1, $t1, 1 
+		j loopJ 
 		endloopJ:
 	
-	addi $t0, $t0, 1 # i++
-	j loopI # Continue loop i
+	addi $t0, $t0, 1 
+	j loopI 
 	endloopI:
 
 	li $a0, 1 # If every cell in board not null => return true
@@ -1332,12 +1356,17 @@ checkFull:
         addi $sp, $sp, 4 
         jr $ra
 
-# Input $a0 T or F, $a1 = piece other
+
+# # # # # # #   ---    CHECKBLOCK   ---   # # # # # # 
+# Function to check if there is a connection of 3   #
+# Input: $a1 = piece other                          #
+# Output: $a0 = 1 if 3 connected, else $a0 = 0      #
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
 checkBlock:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
 
-    addi $t0, $s6, -1 # row index: Initialise i = row - 1
+    addi $t0, $s6, -1 # i = row - 1
 	Bl1:
 		beq $t0, -1, endBl1 # While(i >= 0) do
 		li $t1, 0 # column index: Initialise j = 0
@@ -1461,12 +1490,12 @@ checkBlock:
            j endBl1 
 
 		continueBl:
-            addi $t1, $t1, 1 # j++
+            addi $t1, $t1, 1
             j Bl2 
             
 		endBl2:
-        addi $t0, $t0, -1 # i--
-        j Bl1 # Continue loop i
+        addi $t0, $t0, -1 
+        j Bl1 
 
 	endBl1:
 
