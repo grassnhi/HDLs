@@ -89,53 +89,6 @@ bool checkColumn(int col, Gamer* player) {
     return false;
 }
 
-void removePiece(Gamer*& player1, Gamer*& player2){
-    cout << "Do you want to remove one arbitrary piece of the opponent? You cannot drop a piece if choosing this function.";
-    cout << " Y: yes, N: no. " << endl;
-    char r;
-    cin >> r;
-    while (r != 'Y' && r != 'y' && r != 'n' && r != 'N') {
-        cout << "Invalid character! Please enter Y: yes, N: no. ";
-        cin >> r;
-    }
-    if (r == 'n' || r == 'N') return;
-    player1->remove = 0;
-    player2->count--;
-    remv = true;
-    cout << "Please choose the one you want to remove." << endl;
-    cout << "Which column? " << endl;
-    cin >> col;
-    cout << "Which row? " << endl;
-    cin >> rouu;
-    while (!grid[rouu][col] || grid[rouu][col] != player1->piece)
-    {
-        cout << "There are not any your opponent's piece here! Choose another position.";
-        cout << "Which column? " << endl;
-        cin >> col;
-        cout << "Which row? " << endl;
-        cin >> rouu;
-    }
-       
-    grid[rouu][col] = '\0';
-    for(int i = rouu; i > 0; i--){
-        grid[i][col] = grid[i-1][col];    
-    }
-    printGrid();
-}
-
-void checkViolation(Gamer*& player1, Gamer* player2) {
-    while (!checkColumn(col, player1)) {
-        if (player1->violation == 0) {
-            endGame = true;
-            cout << "Player " << player2->name << " win!" << endl;
-            return;
-        }
-        cout << "Inappropriate column! Please choose a column again: " << endl;
-        cin >> col;
-        player1->violation--;
-    }
-}
-
 void checkWin(Gamer* player, Gamer* other) {
     for (int i = row - 1; i >= 0; i--) {
         for (int j = 0; j < column; j++) {
@@ -176,6 +129,58 @@ void checkWin(Gamer* player, Gamer* other) {
         endGame = true;
     }
 }
+
+void removePiece(Gamer*& player1, Gamer*& player2){
+    cout << "Do you want to remove one arbitrary piece of the opponent? You cannot drop a piece if choosing this function.";
+    cout << " Y: yes, N: no. " << endl;
+    char r;
+    cin >> r;
+    while (r != 'Y' && r != 'y' && r != 'n' && r != 'N') {
+        cout << "Invalid character! Please enter Y: yes, N: no. ";
+        cin >> r;
+    }
+    if (r == 'n' || r == 'N') return;
+    player1->remove = 0;
+    player2->count--;
+    remv = true;
+    cout << "Please choose the one you want to remove." << endl;
+    cout << "Which column? " << endl;
+    cin >> col;
+    cout << "Which row? " << endl;
+    cin >> rouu;
+    while (!grid[rouu][col] || grid[rouu][col] != player1->piece)
+    {
+        cout << "There are not any your opponent's piece here! Choose another position.";
+        cout << "Which column? " << endl;
+        cin >> col;
+        cout << "Which row? " << endl;
+        cin >> rouu;
+    }
+       
+    grid[rouu][col] = '\0';
+    for(int i = rouu; i > 0; i--){
+        grid[i][col] = grid[i-1][col];    
+    }
+    printGrid();
+    checkWin(player1, player2);
+    checkWin(player2, player1);
+}
+
+void checkViolation(Gamer*& player1, Gamer* player2) {
+    while (!checkColumn(col, player1)) {
+        if (player1->violation == 0) {
+            endGame = true;
+            cout << "Player " << player2->name << " win!" << endl;
+            return;
+        }
+        cout << "Inappropriate column! Please choose a column again: " << endl;
+        cin >> col;
+        player1->violation--;
+    }
+}
+
+
+
 
 void undoMove(Gamer*& player1, Gamer* player2){
     char u;

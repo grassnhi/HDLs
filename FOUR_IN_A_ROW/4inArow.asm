@@ -21,15 +21,15 @@ newline:    .byte '\n'
 board:      .space 42 
 name1:      .space 10
 name2:      .space 10
-begin:      .asciiz "\n===================\n|| FOUR IN A ROW ||\n===================\n"
-dashLine:   .asciiz "  -------------\n"
-index:      .asciiz "  0 1 2 3 4 5 6\n"
+begin:      .asciiz "\n ===================\n || FOUR IN A ROW ||\n ===================\n"
+dashLine:   .asciiz "    ---------------\n"
+index:      .asciiz "     0 1 2 3 4 5 6\n"
 askName:    .asciiz "\nFirst, please choose your name (no more than 10 characters) and then, you will be assigned the piece randomly.\n"
 player1:    .asciiz "Player 1: " 
 player2:    .asciiz "Player 2: "   
 rule:       .asciiz "\nEach of you have 3 times undo at the first move and 1 time block the next opponent's move unless there is a chance to win.\nBesides, if you place your piece in an inappropriate position, the move will be restarted, which also counts as a violation.\nWhen you get a violation over 3 times, you will lose this game.\n\nNow, let the one with the piece O go first.\n"
 askCol:     .asciiz "\nPlease choose a column: "
-notCol:     .asciiz "\nInappropriate column! You get a violation! Please choose a column again:"
+notCol:     .asciiz "Inappropriate column! You get a violation! Please choose a column again:"
 askUndo:    .asciiz "Do you want to undo your move? 1: yes, 0: no.\n"
 askRemove:  .asciiz "\nDo you want to remove one arbitrary piece of the opponent? You cannot drop a piece if choosing this function.\nRemember that you have only 1 time 1: yes, 0: no.\n"
 notHere:    .asciiz "There are not any of your opponent's pieces here! Choose another position."
@@ -386,17 +386,28 @@ playGame:
 
         # remove1 = 0, no remove left, false remove
         la $t1, remove1
-        lw $a1, 0($t1)
-        beq $a1, 0, falseRemove1
+        lw $a0, 0($t1) # a0 = remove
+        beq $a0, 0, falseRemove1
         
-        move $a2, $s3  # X
-        la $t1, count2 # count X
+        la $t1, count2
+        lw $v1, 0($t1) # v1 = other count
+        move $a2, $s1 # a2 = my name 
+        move $a1, $s0  # my piece = a1
+        la $t1, count1 # a3 = my count = a3
         lw $a3, 0($t1)
         # but remove1 = 1=> jump to ask, if yes, boolRemove = 1
         jal removePiece # if no boolRem = 0
-
+        # remove a0, other count v1, my piece a1
+        la $t1, count2
+        sw $v1, 0($t1)
         la $t1, remove1
-        sw $a1, 0($t1)
+        sw $a0, 0($t1)
+        la $t1, count1 
+        sw $a3, 0($t1)
+
+        la $t1, boolEnd
+        lw $a0, 0($t1)
+        beq $a0, 1, endGame
 
         # boolRemove = 1 => loss this turn, jump to X
         la $t1, boolRem
@@ -527,17 +538,28 @@ playGame:
         jal printTurn
 
         la $t1, remove2
-        lw $a1, 0($t1)
-        beq $a1, 0, falseRemove2
+        lw $a0, 0($t1)
+        beq $a0, 0, falseRemove2
 
-        move $a2, $s0
-        la $t1, count1 # count O
+        la $t1, count1  
+        lw $v1, 0($t1) 
+        move $a2, $s2 
+        move $a1, $s3  
+        la $t1, count2 
         lw $a3, 0($t1)
 
         jal removePiece
 
+        la $t1, count1  
+        sw $v1, 0($t1) 
         la $t1, remove2
-        sw $a1, 0($t1)
+        sw $a0, 0($t1)
+        la $t1, count2 
+        sw $a3, 0($t1)
+
+        la $t1, boolEnd
+        lw $a0, 0($t1)
+        beq $a0, 1, endGame
         
         la $t1, boolRem
         lw $a2, 0($t1)
@@ -656,13 +678,29 @@ playGame:
 printBoard:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
+	
+	la $a0, dashLine
+	li $v0, 4
+	syscall 
 
     li $t2, 0 # row index => i
     loop1:
         beq $t2, $s6, endLoop1
         
+        li $a0, 32 # Ascii 32 = ' '
+        li $v0, 11 # Print space
+        syscall
+        
         move $a0, $t2 
         li $v0, 1
+        syscall
+        
+        li $a0, 32 # Ascii 32 = ' '
+        li $v0, 11 # Print space
+        syscall
+        
+        li $a0, 124 
+        li $v0, 11 
         syscall
         
         li $a0, 32 # Ascii 32 = ' '
@@ -684,12 +722,16 @@ printBoard:
             syscall
 
             li $a0, 32 # Ascii 32 = ' '
-            li $v0, 11 # Print space
+            li $v0, 11 
             syscall
 
             addi $t3, $t3, 1 # j++
 		    j loop2 
         endLoop2:
+        
+        li $a0, 124 # Ascii 124 = '|'
+        li $v0, 11 
+        syscall
 
         lb $a0, newline
         li $v0, 11
@@ -755,13 +797,16 @@ printTurn:
 
 # # # # # # # # # #   ---   REMOVEPIECE   ---   # # # # # # # # # # # 
 # Function to ask to remove and remove piece if player choose yes   #
-# Input: $a1 = remove, $a2 = other piece, $a3 = count other         #
+# Input: $a0 = remove, $a1 = piece, $v1 = piece count        #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 removePiece:
     addi $sp, $sp, -4 
 	sw $ra, ($sp)
 
-    beq $a1, 0, endRemove # a1 = remove
+    beq $a0, 0, endRemove # a0 = remove
+
+    addi $sp, $sp, -4 
+	sw $a0, ($sp)
 
     la $a0, askRemove
     li $v0, 4
@@ -817,7 +862,7 @@ removePiece:
             
         lb $t3, board($t1) 
         beq $t3, $zero, askPosition
-        beq $t3, $a2, askPosition
+        beq $t3, $a1, askPosition
         
         j found
 
@@ -831,8 +876,14 @@ removePiece:
     found:
         sb $zero, board($t1)
 
-        addi $a1, $a1, -1
-        addi $a3, $a3, -1
+        lw $a0, ($sp) 
+        addi $sp, $sp, 4
+
+        addi $a0, $a0, -1
+        addi $v1, $v1, -1
+
+        addi $sp, $sp, -4 
+	    sw $a0, ($sp)
 
         la $t1, boolRem
         li $t2, 1
@@ -862,8 +913,12 @@ removePiece:
 
         endLoopMove:
             jal printBoard
+            jal checkWin
 
     endRemove:
+        lw $a0, ($sp) 
+        addi $sp, $sp, 4
+
         lw $ra, ($sp) 
         addi $sp, $sp, 4 
         jr $ra
@@ -990,7 +1045,7 @@ printWinner:
 
 # # # # # # # # # # #   ---   CHECKWIN   ---    # # # # # # # # # # # # #
 # Function to check whether player wins or the game ends with draw      #
-# - Input $a1 (piece), $a2 (other name), $a3 (other piece)              #
+# - Input $a1 (piece), $a2 (name), $a3 (piece count)              #
 # - Return with boolEnd is true (print result and exit game) or false.  #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 checkWin:
